@@ -11,7 +11,6 @@ public class UserR : MonoBehaviour
     [SerializeField] TMP_InputField PasswordInputField;
     [SerializeField] TMP_InputField ScoreInputField;
 
-    [SerializeField] private TMP_Text[] Text;
     [SerializeField] List<TMP_Text> scoreTexts;
 
     [SerializeField] string URL = "https://sid-restapi.onrender.com/api/";
@@ -87,13 +86,14 @@ public class UserR : MonoBehaviour
         }
         else
         {
-            Data data = JsonUtility.FromJson<Data>(request.downloadHandler.text);
-            Debug.Log(data.usuario.usernames + ": " + data.usuario.data.score);
+            Debug.Log(request.downloadHandler.text);
+            //Data data = JsonUtility.FromJson<Data>(request.downloadHandler.text);
+            //Debug.Log(data.usuario.usernames + ": " + data.usuario.data.score);
         }
     }
     public IEnumerator SendRegister(string json)
     {
-        UnityWebRequest request = UnityWebRequest.Put(URL + "usuario", json);
+        UnityWebRequest request = UnityWebRequest.Put(URL + "usuarios", json);
         request.SetRequestHeader("Content-Type", "application/json");
         request.method = "POST";
         yield return request.SendWebRequest();
@@ -136,15 +136,15 @@ public class UserR : MonoBehaviour
             {
                 Data data = JsonUtility.FromJson<Data>(request.downloadHandler.text);
 
-                Debug.Log("Inicio sesion usuario  " + data.usuario.usernames);
+                Debug.Log("Inicio sesion usuario  " + data.usuario.username);
 
-                PlayerPrefs.SetString("token", data.tokens);
-                PlayerPrefs.SetString("username", data.usuario.usernames);
+                PlayerPrefs.SetString("token", data.token);
+                PlayerPrefs.SetString("username", data.usuario.username);
 
-                token = data.tokens;
-                username = data.usuario.usernames;
+                token = data.token;
+                username = data.usuario.username;
 
-                Debug.Log(data.tokens);
+                Debug.Log(data.token);
 
 
             }
@@ -170,8 +170,8 @@ public class UserR : MonoBehaviour
             if (request.responseCode == 200)
             {
                 Data data = JsonUtility.FromJson<Data>(request.downloadHandler.text);
-                Debug.Log("El usuario " + data.usuario.usernames + " esta activo");
-                Debug.Log(data.usuario.data.score);
+                Debug.Log("El usuario " + data.usuario.username + " esta activo");
+                Debug.Log(data.usuario._id);
             }
             else
             {
@@ -194,16 +194,16 @@ public class UserR : MonoBehaviour
             //Debug.Log(request.downloadHandler.text);
             Data data = JsonUtility.FromJson<Data>(request.downloadHandler.text);
 
-            data.usuarios.OrderByDescending(u => u.data.score);
+            UserInfo[] lista = data.usuarios.OrderByDescending(u => u.data.score).ToArray();
 
-            foreach (UserInfo us in data.usuarios)
+            foreach (UserInfo us in lista)
             {
-                Debug.Log(us.usernames + ": " + us.data.score);
+                Debug.Log(us.username + ": " + us.data.score);
             }
-            for (int i = 0; i < data.usuarios.Length && i < scoreTexts.Count; i++)
+            for (int i = 0; i < lista.Length && i < scoreTexts.Count; i++)
             {
-                UserInfo user = data.usuarios[i];
-                scoreTexts[i].text = user.usernames + ": " + user.data.score;
+                UserInfo user = lista[i];
+                scoreTexts[i].text = user.username + ": " + user.data.score;
             }
 
         }
@@ -216,7 +216,7 @@ public class Data
     public string username;
     public string password;
     public UserInfo usuario;
-    public string tokens;
+    public string token;
     public UserInfo[] usuarios;
 }
 
@@ -226,10 +226,11 @@ public class UserRegistryScore
     public DataUser data;
 }
 
+[System.Serializable]
 public class UserInfo
 {
     public string _id;
-    public string usernames;
+    public string username;
     public bool estado;
     public DataUser data;
 }
