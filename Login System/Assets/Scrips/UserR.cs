@@ -10,6 +10,10 @@ public class UserR : MonoBehaviour
     [SerializeField] TMP_InputField UsernameInputField;
     [SerializeField] TMP_InputField PasswordInputField;
     [SerializeField] TMP_InputField ScoreInputField;
+    [SerializeField] TMP_Text ScoreTextElement;
+
+
+    [SerializeField] TMP_Text NameUser;
 
     [SerializeField] List<TMP_Text> scoreTexts;
 
@@ -87,8 +91,6 @@ public class UserR : MonoBehaviour
         else
         {
             Debug.Log(request.downloadHandler.text);
-            //Data data = JsonUtility.FromJson<Data>(request.downloadHandler.text);
-            //Debug.Log(data.usuario.usernames + ": " + data.usuario.data.score);
         }
     }
     public IEnumerator SendRegister(string json)
@@ -146,7 +148,7 @@ public class UserR : MonoBehaviour
 
                 Debug.Log(data.token);
 
-
+                NameUser.text = "Active user: " + username;
             }
             else
             {
@@ -154,6 +156,20 @@ public class UserR : MonoBehaviour
             }
         }
     }
+
+    public void Logout()
+    {
+        PlayerPrefs.DeleteKey("token");
+        PlayerPrefs.DeleteKey("username");
+
+        NameUser.text = "";
+
+        foreach (var scoreText in scoreTexts)
+        {
+            scoreText.text = "";
+        }
+    }
+
     public IEnumerator GetPerfil(string username)
     {
         UnityWebRequest request = UnityWebRequest.Get(URL + "usuarios/" + username);
@@ -172,6 +188,7 @@ public class UserR : MonoBehaviour
                 Data data = JsonUtility.FromJson<Data>(request.downloadHandler.text);
                 Debug.Log("El usuario " + data.usuario.username + " esta activo");
                 Debug.Log(data.usuario._id);
+
             }
             else
             {
@@ -191,7 +208,6 @@ public class UserR : MonoBehaviour
         }
         else
         {
-            //Debug.Log(request.downloadHandler.text);
             Data data = JsonUtility.FromJson<Data>(request.downloadHandler.text);
 
             UserInfo[] lista = data.usuarios.OrderByDescending(u => u.data.score).ToArray();
