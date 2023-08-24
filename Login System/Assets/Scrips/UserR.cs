@@ -12,6 +12,12 @@ public class UserR : MonoBehaviour
     [SerializeField] TMP_InputField ScoreInputField;
     [SerializeField] TMP_Text ScoreTextElement;
 
+    //Sections
+    [SerializeField] GameObject Log;
+    [SerializeField] GameObject Lis;
+    [SerializeField] GameObject Inic;
+
+
 
     [SerializeField] TMP_Text NameUser;
 
@@ -35,6 +41,10 @@ public class UserR : MonoBehaviour
             username = PlayerPrefs.GetString("username");
             StartCoroutine(GetPerfil(username));
         }
+
+        Log.SetActive(true);
+        Inic.SetActive(false);
+        Lis.SetActive(false);
     }
 
     public void Registre()
@@ -59,6 +69,18 @@ public class UserR : MonoBehaviour
 
         StartCoroutine(SendLogin(json));
     }
+    public void Logout()
+    {
+        PlayerPrefs.DeleteKey("token");
+        PlayerPrefs.DeleteKey("username");
+
+        NameUser.text = "";
+
+        foreach (var scoreText in scoreTexts)
+        {
+            scoreText.text = "";
+        }
+    }
     public void UpdateScoreList()
     {
         StartCoroutine(GetUsers());
@@ -76,6 +98,27 @@ public class UserR : MonoBehaviour
         StartCoroutine(SendScore(json));
     }
 
+    public void Button1()
+    {
+        Log.SetActive(false);
+        Inic.SetActive(true);
+    }
+    public void Button2()
+    {
+        Lis.SetActive(false);
+        Inic.SetActive(true);
+    }
+    public void Button3()
+    {
+        Inic.SetActive(false);
+        Log.SetActive(true);
+    }
+    public void Button4()
+    {
+        Inic.SetActive(false);
+        Lis.SetActive(true);
+    }
+
     public IEnumerator SendScore(string json)
     {
         UnityWebRequest request = UnityWebRequest.Put(URL + "usuarios", json);
@@ -90,6 +133,8 @@ public class UserR : MonoBehaviour
         }
         else
         {
+            Data data = JsonUtility.FromJson<Data>(request.downloadHandler.text);
+            ScoreTextElement.text = "Score: " + data.usuario.data.score.ToString();
             Debug.Log(request.downloadHandler.text);
         }
     }
@@ -149,6 +194,8 @@ public class UserR : MonoBehaviour
                 Debug.Log(data.token);
 
                 NameUser.text = "Active user: " + username;
+
+                Button1();
             }
             else
             {
@@ -156,20 +203,6 @@ public class UserR : MonoBehaviour
             }
         }
     }
-
-    public void Logout()
-    {
-        PlayerPrefs.DeleteKey("token");
-        PlayerPrefs.DeleteKey("username");
-
-        NameUser.text = "";
-
-        foreach (var scoreText in scoreTexts)
-        {
-            scoreText.text = "";
-        }
-    }
-
     public IEnumerator GetPerfil(string username)
     {
         UnityWebRequest request = UnityWebRequest.Get(URL + "usuarios/" + username);
